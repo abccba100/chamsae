@@ -65,7 +65,7 @@
     <h2>2. 접근성 API(AccessibilityService) 사용</h2>
     <p>참새는 Android 접근성 API를 사용합니다. 장애인 보조 기능이 아니라, 이용자가 직접 켠 경우에만 아래 목적에 한해 동작합니다.</p>
     <table>
-      <tr><th>확인하는 정보</th><td>유튜브(YouTube), 인스타그램(Instagram), 네이버 웹툰 앱이 화면에 떠 있을 때, 지금 화면이 쇼츠·릴스·피드인지 알아보기 위한 화면 구성 요소의 이름(ID)과 선택 상태. 잠깐 보기를 쓰는 동안에는 시간 계산을 위해 지금 앞에 있는 앱이 무엇인지(앱 패키지명).</td></tr>
+      <tr><th>확인하는 정보</th><td>유튜브(YouTube), 인스타그램(Instagram), 틱톡(TikTok), 네이버 웹툰 앱이 화면에 떠 있을 때, 지금 화면이 쇼츠·릴스·피드인지(틱톡·웹툰은 앱이 앞에 있는지) 알아보기 위한 화면 구성 요소의 이름(ID)과 선택 상태. 잠깐 보기를 쓰는 동안에는 시간 계산을 위해 지금 앞에 있는 앱이 무엇인지(앱 패키지명).</td></tr>
       <tr><th>하는 동작</th><td>막기로 설정한 화면이 뜨면 정해진 규칙에 따라 뒤로가기, 홈으로 가기, 인스타그램 메시지 탭 누르기 중 하나를 대신합니다. 그 밖의 동작은 하지 않으며, 앱이 스스로 판단해 다른 행동을 하지 않습니다.</td></tr>
       <tr><th>읽지 않는 정보</th><td>메시지 내용, 게시물·댓글 텍스트, 사진·영상, 입력하는 글자, 비밀번호 등은 읽거나 저장하지 않습니다.</td></tr>
       <tr><th>저장·전송</th><td>확인한 화면 정보는 그 순간 기기 안에서 판단하는 데에만 쓰고 저장하지 않습니다. 인터넷 권한이 없어 외부로 전송할 수 없습니다.</td></tr>
@@ -128,7 +128,7 @@
     <p>앱 기능이 바뀌어 이 방침을 고쳐야 할 경우, 시행 7일 전부터 이 페이지에 변경 내용과 시행일을 알립니다. 정보를 수집하게 되는 변경이라면 앱 안에서 다시 동의를 받습니다.</p>
   </section>
 
-  <p class="meta">YouTube는 Google LLC, Instagram은 Meta Platforms, Inc., 네이버 웹툰은 NAVER WEBTOON의 상표이며, 참새는 이들 회사와 관련이 없습니다.</p>
+  <p class="meta">YouTube는 Google LLC, Instagram은 Meta Platforms, Inc., TikTok은 ByteDance Ltd., 네이버 웹툰은 NAVER WEBTOON의 상표이며, 참새는 이들 회사와 관련이 없습니다.</p>
 
   <div class="en" lang="en">
     <h1>Chamsae Privacy Policy (English summary)</h1>
@@ -137,7 +137,7 @@
       <ul>
         <li><b>No data collection.</b> Chamsae does not collect, store on any server, share, or sell any personal or sensitive data. There are no accounts, ads, analytics, or crash-reporting SDKs.</li>
         <li><b>No internet permission.</b> The app does not declare the INTERNET permission, so it cannot transmit any data off the device.</li>
-        <li><b>Accessibility API.</b> Chamsae uses the AccessibilityService API (it is not an accessibility tool for people with disabilities). Only while YouTube, Instagram, or Naver Webtoon is on screen, it checks view IDs and selection state to detect Shorts, Reels, or the home feed, and then performs one fixed action: Back, Home, or tapping Instagram's Messages tab. During a timed break it checks which app is in the foreground. It does not read message contents, post text, media, or typed input, and it does not store what it sees.</li>
+        <li><b>Accessibility API.</b> Chamsae uses the AccessibilityService API (it is not an accessibility tool for people with disabilities). Only while YouTube, Instagram, TikTok, or Naver Webtoon is on screen, it checks view IDs and selection state to detect Shorts, Reels, or the home feed, and then performs one fixed action: Back, Home, or tapping Instagram's Messages tab. During a timed break it checks which app is in the foreground. It does not read message contents, post text, media, or typed input, and it does not store what it sees.</li>
         <li><b>On-device data only.</b> Settings, today's block count, break usage, and the user's to-do list are stored in app-private storage on the device, excluded from Android cloud backup and device transfer, and deleted when the app or its data is removed.</li>
         <li><b>Permissions:</b> Accessibility service, notifications, and boot completed (to keep the status check). The app does not request REQUEST_IGNORE_BATTERY_OPTIMIZATIONS; it only opens the system app-info screen so the user can change battery settings themselves. No location, contacts, camera, microphone, or storage access.</li>
         <li><b>Contact:</b> 참새 개발자 · <a href="mailto:abccba111307@gmail.com">abccba111307@gmail.com</a></li>
