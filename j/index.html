@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<meta name="format-detection" content="telephone=no">
+<meta name="color-scheme" content="light dark">
+<title>참새 짹 코드</title>
+<meta property="og:title" content="참새 짹 코드">
+<meta property="og:description" content="누르면 참새 앱에서 친구의 짹을 받아요">
+<style>
+  /* v4 토큰(앱 res/values · values-night 의 ak_colors.xml): 종이 · 크림 묶음 + 립 · 호박 주 버튼 + 립 · 밤색 · 하늘 */
+  :root {
+    --paper:#FDFCFA; --group:#FDEED4; --group-lip:#F4E0C3; --text:#3B2A22; --sub:#7A6558; --divider:#E4E0DD;
+    --act:#F7B048; --act-lip:#C17D00; --on-act:#3B2A22; --chestnut:#86543C; --sky:#BEE1F0; --wire:#68422F;
+    --bubble:#FDEED4; --ink:#3B2A22; --btn2:#FDFCFA; --btn2-lip:#F4E0C3; --warn:#9A4B12;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#1B1612; --group:#26201B; --group-lip:#120D08; --text:#F6EEE4; --sub:#B6AEA6; --divider:#3B352F;
+      --sky:#121F33; --wire:#8C6A55; --btn2:#2E2620; --btn2-lip:#120D08; --warn:#F5B27A;
+    }
+  }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--paper); color:var(--text); word-break:keep-all; overflow-wrap:anywhere;
+         font:16px/1.55 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", Roboto, sans-serif; }
+  main { max-width:440px; margin:0 auto; padding:16px 16px calc(32px + env(safe-area-inset-bottom)); }
+
+  /* 작은 하늘 무대: 전깃줄 위 참깨 + 말풍선(앱 홈 무대의 축소판) */
+  .stage { position:relative; height:176px; border-radius:24px; background:var(--sky); overflow:hidden; margin-bottom:20px; }
+  .stage .wire { position:absolute; left:0; right:0; top:0; width:100%; height:100%; }
+  .stage .bird { position:absolute; left:calc(50% - 118px); top:43px; width:124px; height:124px; }
+  .bubble { position:absolute; left:calc(50% + 4px); top:30px; max-width:150px; padding:10px 14px 11px; border-radius:18px;
+            background:var(--bubble); color:var(--ink); font-weight:800; font-size:16px; line-height:1.3; }
+  .bubble::before { content:""; position:absolute; left:-7px; top:24px; border:8px solid transparent; border-right-color:var(--bubble); border-left:0; }
+
+  h1 { font-size:24px; line-height:1.35; margin:0 0 6px; font-weight:800; }
+  .sub { color:var(--sub); margin:0 0 20px; font-size:15px; }
+
+  .btn { display:flex; align-items:center; justify-content:center; width:100%; min-height:60px; margin:0 0 12px; padding:0 16px 4px;
+         border:0; border-radius:18px; text-decoration:none; cursor:pointer; -webkit-tap-highlight-color:transparent;
+         font:inherit; font-size:19px; font-weight:800; transition:transform .08s ease, box-shadow .08s ease; }
+  .btn:active { transform:translateY(3px); }
+  .primary { background:var(--act); color:var(--on-act); box-shadow:inset 0 -4px 0 var(--act-lip); }
+  .primary:active { box-shadow:inset 0 -1px 0 var(--act-lip); }
+  .second { background:var(--btn2); color:var(--text); font-size:17px; box-shadow:inset 0 0 0 1px var(--divider), inset 0 -4px 0 var(--btn2-lip); }
+  .second:active { box-shadow:inset 0 0 0 1px var(--divider), inset 0 -1px 0 var(--btn2-lip); }
+  .btn:focus-visible { outline:3px solid var(--chestnut); outline-offset:2px; }
+
+  .bundle { background:var(--group); border-radius:20px; padding:16px 16px 17.6px; box-shadow:inset 0 -1.6px 0 var(--group-lip); margin:4px 0 16px; }
+  .label { color:var(--sub); font-size:13px; font-weight:700; margin:0 0 4px; }
+  .code { font:700 17px/1.5 ui-monospace, "SF Mono", Menlo, "Roboto Mono", monospace; letter-spacing:.06em; color:var(--chestnut);
+          -webkit-user-select:all; user-select:all; }
+  .code span { display:inline-block; margin-right:.55em; }   /* 네 글자 묶음 단위로만 줄바꿈 */
+  @media (prefers-color-scheme: dark) { .code { color:var(--act); } }
+  ol { margin:12px 0 0; padding-left:22px; color:var(--sub); font-size:14px; }
+  ol li { margin:2px 0; }
+  ol b { color:var(--text); }
+  .note { color:var(--sub); font-size:13px; margin:0; }
+  .note a, .link { color:var(--chestnut); font-weight:700; }
+  @media (prefers-color-scheme: dark) { .note a, .link { color:var(--act); } }
+  .warn { color:var(--warn); font-weight:700; margin:0 0 6px; }
+  .toast { min-height:20px; margin:-4px 0 12px; text-align:center; color:var(--sub); font-size:14px; font-weight:700; }
+  hr { border:0; height:1px; background:var(--divider); margin:20px 0 16px; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="stage" aria-hidden="true">
+    <svg class="wire" viewBox="0 0 400 176" preserveAspectRatio="none"><path d="M-10 150 Q200 166 410 138" fill="none" stroke="var(--wire)" stroke-width="3.4" stroke-linecap="round"/></svg>
+    <!-- 참깨 idle (design/redesign/v4/char/idle.svg, 리그 이름 · 피벗만 뺌) -->
+    <svg class="bird" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" focusable="false"><clipPath id="ck-bodyclip"><path d="M28.2 43.4C29.88 39.32 31.35 35.13 33.9 31.6C36.45 28.07 39.82 24.57 43.5 22.2C47.18 19.83 51.68 18.13 56 17.4C60.32 16.67 65.18 16.82 69.4 17.8C73.62 18.78 78.13 20.52 81.3 23.3C84.47 26.08 86.55 30.5 88.4 34.5C90.25 38.5 91.47 42.93 92.4 47.3C93.33 51.67 94.28 56.32 94 60.7C93.72 65.08 92.93 70.05 90.7 73.6C88.47 77.15 84.4 79.87 80.6 82C76.8 84.13 72.23 85.48 67.9 86.4C63.57 87.32 59.05 87.5 54.6 87.5C50.15 87.5 45.52 87.4 41.2 86.4C36.88 85.4 31.63 84.32 28.7 81.5C25.77 78.68 24.42 73.73 23.6 69.5C22.78 65.27 23.03 60.45 23.8 56.1C24.57 51.75 26.52 47.48 28.2 43.4Z"/></clipPath><clipPath id="ck-necklo"><path d="M-60 56H160V160H-60Z"/></clipPath><clipPath id="ck-neckhi"><path d="M-60 -60H160V66H-60Z"/></clipPath><clipPath id="ck-neckhd"><path d="M-60 -60H160V61H-60Z"/></clipPath><g><g><path d="M16.5 66.4C14.37 65.77 14.15 66.85 13.2 67.2C12.25 67.55 11.33 68.03 10.8 68.5C10.27 68.97 10.02 69.48 10 70C9.98 70.52 10.15 71 10.7 71.6C11.25 72.2 12.28 72.97 13.3 73.6C14.32 74.23 15.62 74.9 16.8 75.4C17.98 75.9 19.12 76.37 20.4 76.6C21.68 76.83 23.57 77.73 24.5 76.8C25.43 75.87 27.33 72.73 26 71C24.67 69.27 18.63 67.03 16.5 66.4Z" fill="#86543C"/><path d="M16.6 67.4C17.2 68.6 17.7 69.88 18.4 71C19.1 72.12 19.97 73.18 20.8 74.1C21.63 75.02 22.53 75.7 23.4 76.5C22.73 76.33 22 76.32 21.4 76C20.8 75.68 20.5 75.33 19.8 74.6C19.1 73.87 17.78 72.43 17.2 71.6C16.62 70.77 16.4 70.3 16.3 69.6C16.2 68.9 16.5 68.13 16.6 67.4Z" fill="#68422F"/></g><g><path d="M84 54C85.25 52.58 88.5 54.17 90 55.5C91.5 56.83 92.83 59.58 93 62C93.17 64.42 92.25 68.33 91 70C89.75 71.67 86.92 73 85.5 72C84.08 71 82.75 67 82.5 64C82.25 61 82.75 55.42 84 54Z" fill="#86543C"/></g><g><g clip-path="url(#ck-bodyclip)"><g clip-path="url(#ck-necklo)"><path d="M28.2 43.4C29.88 39.32 31.35 35.13 33.9 31.6C36.45 28.07 39.82 24.57 43.5 22.2C47.18 19.83 51.68 18.13 56 17.4C60.32 16.67 65.18 16.82 69.4 17.8C73.62 18.78 78.13 20.52 81.3 23.3C84.47 26.08 86.55 30.5 88.4 34.5C90.25 38.5 91.47 42.93 92.4 47.3C93.33 51.67 94.28 56.32 94 60.7C93.72 65.08 92.93 70.05 90.7 73.6C88.47 77.15 84.4 79.87 80.6 82C76.8 84.13 72.23 85.48 67.9 86.4C63.57 87.32 59.05 87.5 54.6 87.5C50.15 87.5 45.52 87.4 41.2 86.4C36.88 85.4 31.63 84.32 28.7 81.5C25.77 78.68 24.42 73.73 23.6 69.5C22.78 65.27 23.03 60.45 23.8 56.1C24.57 51.75 26.52 47.48 28.2 43.4Z" fill="#B47250"/><path d="M84.8 30.4C86.67 32.93 88.47 34.4 90.4 38C92.33 41.6 96.63 44.17 96.4 52C96.17 59.83 93.4 78.08 89 85C84.6 91.92 77 92.33 70 93.5C63 94.67 52.4 93.18 47 92C41.6 90.82 39.6 88.4 37.6 86.4C35.6 84.4 33.87 84.07 35 80C36.13 75.93 43.9 67.45 44.4 62C44.9 56.55 38.47 50.08 38 47.3C37.53 44.52 40.22 45.78 41.6 45.3C42.98 44.82 44.73 44.7 46.3 44.4C47.4 42.63 48.23 40.7 49.6 39.1C50.97 37.5 52.6 35.92 54.5 34.8C56.4 33.68 58.43 32.38 61 32.4C63.57 32.42 67.55 33.58 69.9 34.9C72.25 36.22 73.95 38.62 75.1 40.3C76.25 41.98 75.88 44.48 76.8 45C77.72 45.52 79.63 44.8 80.6 43.4C81.57 42 81.9 38.77 82.6 36.6C83.3 34.43 84.07 32.47 84.8 30.4Z" fill="#FDEED4"/></g></g></g><g><path d="M50.5 86C51.18 85.97 51.78 86.77 52.5 87.1C53.22 87.43 54.27 87.72 54.8 88C55.33 88.28 55.55 88.47 55.7 88.8C55.85 89.13 55.7 89.6 55.7 90C54.87 89.93 53.78 89.87 53.2 89.8C52.62 89.73 52.53 89.67 52.2 89.6C52.07 90 51.93 90.4 51.8 90.8C51.47 90.8 51.13 90.88 50.8 90.8C50.47 90.72 50.25 90.52 49.8 90.3C49.35 90.08 48.82 89.6 48.1 89.5C47.38 89.4 46.18 89.77 45.5 89.7C44.82 89.63 44.5 89.3 44 89.1C44.2 88.67 44.23 88.1 44.6 87.8C44.97 87.5 45.57 87.38 46.2 87.3C46.83 87.22 47.68 87.52 48.4 87.3C49.12 87.08 49.82 86.03 50.5 86Z" fill="#EC8D48"/></g><g><path d="M73.1 85C73.75 85.03 74.03 85.67 74.6 86C75.17 86.33 76.13 86.62 76.5 87C76.87 87.38 76.7 87.87 76.8 88.3C76.27 88.37 75.72 88.57 75.2 88.5C74.68 88.43 74.2 88.1 73.7 87.9C73.53 87.97 73.32 87.9 73.2 88.1C73.08 88.3 73.07 88.77 73 89.1C72.57 89.07 72.07 89.07 71.7 89C71.33 88.93 71.17 88.88 70.8 88.7C70.43 88.52 70.2 87.98 69.5 87.9C68.8 87.82 67.28 88.33 66.6 88.2C65.92 88.07 65.8 87.47 65.4 87.1C66.3 86.9 67.22 86.72 68.1 86.5C68.98 86.28 69.87 86.05 70.7 85.8C71.53 85.55 72.45 84.97 73.1 85Z" fill="#EC8D48"/></g><g><g clip-path="url(#ck-bodyclip)"><g clip-path="url(#ck-neckhd)"><path d="M28.2 43.4C29.88 39.32 31.35 35.13 33.9 31.6C36.45 28.07 39.82 24.57 43.5 22.2C47.18 19.83 51.68 18.13 56 17.4C60.32 16.67 65.18 16.82 69.4 17.8C73.62 18.78 78.13 20.52 81.3 23.3C84.47 26.08 86.55 30.5 88.4 34.5C90.25 38.5 91.47 42.93 92.4 47.3C93.33 51.67 94.28 56.32 94 60.7C93.72 65.08 92.93 70.05 90.7 73.6C88.47 77.15 84.4 79.87 80.6 82C76.8 84.13 72.23 85.48 67.9 86.4C63.57 87.32 59.05 87.5 54.6 87.5C50.15 87.5 45.52 87.4 41.2 86.4C36.88 85.4 31.63 84.32 28.7 81.5C25.77 78.68 24.42 73.73 23.6 69.5C22.78 65.27 23.03 60.45 23.8 56.1C24.57 51.75 26.52 47.48 28.2 43.4Z" fill="#B47250"/></g></g></g><g><g clip-path="url(#ck-bodyclip)"><g clip-path="url(#ck-neckhi)"><path d="M84.8 30.4C86.67 32.93 88.47 34.4 90.4 38C92.33 41.6 96.63 44.17 96.4 52C96.17 59.83 93.4 78.08 89 85C84.6 91.92 77 92.33 70 93.5C63 94.67 52.4 93.18 47 92C41.6 90.82 39.6 88.4 37.6 86.4C35.6 84.4 33.87 84.07 35 80C36.13 75.93 43.9 67.45 44.4 62C44.9 56.55 38.47 50.08 38 47.3C37.53 44.52 40.22 45.78 41.6 45.3C42.98 44.82 44.73 44.7 46.3 44.4C47.4 42.63 48.23 40.7 49.6 39.1C50.97 37.5 52.6 35.92 54.5 34.8C56.4 33.68 58.43 32.38 61 32.4C63.57 32.42 67.55 33.58 69.9 34.9C72.25 36.22 73.95 38.62 75.1 40.3C76.25 41.98 75.88 44.48 76.8 45C77.72 45.52 79.63 44.8 80.6 43.4C81.57 42 81.9 38.77 82.6 36.6C83.3 34.43 84.07 32.47 84.8 30.4Z" fill="#FDEED4"/></g></g></g><g><path d="M54.48 51.04A5 3.62 0 1 0 64.48 51.04A5 3.62 0 1 0 54.48 51.04Z" fill="#FEBEA4"/></g><g><path d="M89.65 44.8A3.36 2.32 73.3 1 0 91.59 51.24A3.36 2.32 73.3 1 0 89.65 44.8Z" fill="#FEBEA4"/></g><g><path d="M63.47 44.73A3.18 4.4 0 1 0 69.83 44.73A3.18 4.4 0 1 0 63.47 44.73Z" fill="#4D3B2F"/></g><g><path d="M85.03 42.35A1.72 3.58 0 1 0 88.47 42.35A1.72 3.58 0 1 0 85.03 42.35Z" fill="#4D3B2F"/></g><g><path d="M79.5 49.8C78.53 49.8 77.38 49.8 76.6 50.3C75.82 50.8 75.37 51.92 74.8 52.8C74.23 53.68 73.6 54.7 73.2 55.6C72.8 56.5 72.43 57.4 72.4 58.2C72.37 59 72.63 59.9 73 60.4C73.37 60.9 74.05 61.18 74.6 61.2C75.15 61.22 75.73 60.73 76.3 60.5C76.53 61.27 76.6 62.18 77 62.8C77.4 63.42 78.12 63.98 78.7 64.2C79.28 64.42 79.97 64.33 80.5 64.1C81.03 63.87 81.52 63.37 81.9 62.8C82.28 62.23 82.5 61.4 82.8 60.7C83.33 60.8 83.88 61.13 84.4 61C84.92 60.87 85.58 60.45 85.9 59.9C86.22 59.35 86.4 58.52 86.3 57.7C86.2 56.88 85.7 55.87 85.3 55C84.9 54.13 84.38 53.28 83.9 52.5C83.42 51.72 83.13 50.75 82.4 50.3C81.67 49.85 80.47 49.8 79.5 49.8Z" fill="#5B4536"/></g><g><path d="M75.4 47.6C76.13 47.4 78.07 47.6 79.6 47.6C81.13 47.6 83.7 47.47 84.6 47.6C85.5 47.73 85.1 48.07 85 48.4C84.9 48.73 84.47 49.2 84 49.6C83.53 50 82.9 50.5 82.2 50.8C81.5 51.1 80.6 51.35 79.8 51.4C79 51.45 78.05 51.32 77.4 51.1C76.75 50.88 76.27 50.48 75.9 50.1C75.53 49.72 75.28 49.22 75.2 48.8C75.12 48.38 74.67 47.8 75.4 47.6Z" fill="#F3A841"/></g><g><path d="M74.3 47.3C74.33 46.82 74.45 46.05 74.8 45.4C75.15 44.75 75.75 43.92 76.4 43.4C77.05 42.88 77.88 42.43 78.7 42.3C79.52 42.17 80.52 42.3 81.3 42.6C82.08 42.9 82.82 43.53 83.4 44.1C83.98 44.67 84.48 45.47 84.8 46C85.12 46.53 85.32 46.92 85.3 47.3C85.28 47.68 85.22 48.07 84.7 48.3C84.18 48.53 83.22 48.6 82.2 48.7C81.18 48.8 79.7 48.9 78.6 48.9C77.5 48.9 76.27 48.8 75.6 48.7C74.93 48.6 74.82 48.53 74.6 48.3C74.38 48.07 74.27 47.78 74.3 47.3Z" fill="#F7B048"/><path d="M76 48.3C77.1 48.18 78.18 48 79.3 47.95C80.42 47.9 81.57 47.98 82.7 48C81.57 48.23 80.42 48.65 79.3 48.7C78.18 48.75 77.1 48.43 76 48.3Z" fill="#C97724"/></g><g><path d="M53.7 10.9C54.65 11.02 57.43 11.52 58.9 12.3C60.37 13.08 61.68 14.4 62.5 15.6C63.32 16.8 63.37 18.2 63.8 19.5C61.9 18.93 59.3 18.17 58.1 17.8C56.9 17.43 57.18 17.75 56.6 17.3C56.02 16.85 55.17 16.05 54.6 15.1C54.03 14.15 53.35 12.3 53.2 11.6C53.05 10.9 52.75 10.78 53.7 10.9Z" fill="#FDECD2"/></g><g><path d="M32 46.5C34.63 46.18 37.62 46.98 40.1 48C42.58 49.02 45.42 50.52 46.9 52.6C48.38 54.68 49.1 57.88 49 60.5C48.9 63.12 47.63 65.93 46.3 68.3C44.97 70.67 43.13 73.03 41 74.7C38.87 76.37 36.08 77.87 33.5 78.3C30.92 78.73 27.92 78.35 25.5 77.3C23.08 76.25 20.5 74.18 19 72C17.5 69.82 16.43 66.78 16.5 64.2C16.57 61.62 18.1 58.88 19.4 56.5C20.7 54.12 22.2 51.57 24.3 49.9C26.4 48.23 29.37 46.82 32 46.5Z" fill="#86543C"/><path d="M23.2 56C22.97 56.57 22.42 57.13 22.5 57.7C22.58 58.27 23.03 59.17 23.7 59.4C24.37 59.63 25.53 59.28 26.5 59.1C27.47 58.92 28.5 58.57 29.5 58.3C29.07 59.17 28.3 60 28.2 60.9C28.1 61.8 28.38 63.08 28.9 63.7C29.42 64.32 30.3 64.6 31.3 64.6C32.3 64.6 33.7 64 34.9 63.7C35.13 64.33 35.17 65.13 35.6 65.6C36.03 66.07 36.55 66.42 37.5 66.5C38.45 66.58 40.03 66.23 41.3 66.1C40.77 67 40.43 68 39.7 68.8C38.97 69.6 37.9 70.48 36.9 70.9C35.9 71.32 34.67 71.55 33.7 71.3C32.73 71.05 31.97 70.03 31.1 69.4C29.87 69.3 28.47 69.32 27.4 69.1C26.33 68.88 25.28 68.58 24.7 68.1C24.12 67.62 24.05 66.87 23.9 66.2C23.75 65.53 23.83 64.8 23.8 64.1C23.07 63.93 22.2 64.02 21.6 63.6C21 63.18 20.37 62.37 20.2 61.6C20.03 60.83 20.1 59.93 20.6 59C21.1 58.07 22.33 57 23.2 56Z" fill="#68422F"/></g></g></svg>
+    <div class="bubble" id="bubble">짹!<br>친구의 짹이 왔어</div>
+  </div>
+
+  <h1 id="title">짹 코드를 확인하는 중…</h1>
+  <p class="sub" id="sub">&nbsp;</p>
+
+  <section id="ok" hidden>
+    <a class="btn primary" id="open" href="#" role="button">참새 앱에서 열기</a>
+    <button class="btn second" id="copy" type="button">코드 복사</button>
+    <p class="toast" id="toast" role="status" aria-live="polite"></p>
+
+    <div class="bundle">
+      <p class="label">짹 코드</p>
+      <div class="code" id="code"></div>
+      <ol>
+        <li>위 <b>참새 앱에서 열기</b>를 눌러요</li>
+        <li>안 열리면 <b>코드 복사</b>를 누르고</li>
+        <li>참새 앱 아래 <b>참새떼</b> 탭 → <b>짹 붙여넣기</b>(무리가 없으면 <b>붙여넣기</b>)</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="bad" hidden>
+    <div class="bundle">
+      <p class="warn">코드 모양이 맞지 않아요</p>
+      <p class="note">메시지의 링크를 처음부터 끝까지 다시 눌러 주세요. 링크가 두 줄로 나뉘어 잘렸을 수 있어요.
+        카톡에서 메시지를 길게 눌러 <b>공유 → 참새</b>로 보내도 받을 수 있어요.</p>
+    </div>
+  </section>
+
+  <hr>
+  <p class="note"><b>참새가 아직 없나요?</b> 쇼츠 · 릴스 같은 숏폼을 참깨가 물어가 주는 안드로이드 앱이에요.
+    <a class="link" id="store" href="https://play.google.com/store/apps/details?id=com.abc100.chamsae" rel="noreferrer">Play 스토어에서 보기</a></p>
+  <p class="note" style="margin-top:10px">이 페이지는 주소의 '#' 뒤 코드를 이 휴대폰 안에서만 읽어요. 코드는 서버로 전송되지 않고,
+    이 페이지는 아무것도 저장하거나 보내지 않아요. <a href="../privacy/">개인정보처리방침</a></p>
+</main>
+<script>
+(function () {
+  "use strict";
+  var ALPHA = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";       // Crockford base32 (앱 CoopCodec 과 같음)
+  // 첫 글자의 앞 4비트 = 종류, 길이 = 종류마다 고정 (앱 CoopCodec.TYPE_* · *_LEN)
+  var KINDS = {
+    1: { len: 24, title: "친구의 짹이 왔어요", sub: "참새 앱에서 받으면 둥지에 오늘 가지가 붙어요", bubble: "짹!<br>친구의 짹이 왔어" },
+    2: { len: 28, title: "참새떼 초대가 왔어요", sub: "참새 앱에서 열면 친구와 같이 둥지를 키워요", bubble: "같이<br>지키자 짹!" }
+  };
+  var PKG = "com.abc100.chamsae";
+  var SCHEME = "chamsae";                                 // AndroidManifest: CoopImportActivity <data android:scheme="chamsae" android:host="j"/>
+  var STORE = "https://play.google.com/store/apps/details?id=" + PKG;
+  function $(id) { return document.getElementById(id); }
+
+  function normalize(s) {
+    try { s = decodeURIComponent(s); } catch (e) { /* 그대로 */ }
+    return s.toUpperCase().replace(/[\s-]/g, "").replace(/O/g, "0").replace(/[IL]/g, "1");
+  }
+
+  var code = "";
+  function render() {
+    code = normalize(location.hash.replace(/^#/, "")).slice(0, 64);
+    var valid = code.length > 0 && code.split("").every(function (c) { return ALPHA.indexOf(c) >= 0; });
+    var kind = valid ? KINDS[ALPHA.indexOf(code[0]) >> 1] : null;
+    $("ok").hidden = true; $("bad").hidden = true;
+    if (!kind || code.length !== kind.len) {
+      $("title").textContent = code ? "짹 코드를 읽지 못했어요" : "짹 코드가 없어요";
+      $("sub").textContent = "링크가 잘리지 않았는지 확인해 주세요";
+      $("bubble").innerHTML = "어?<br>코드가 이상해";
+      $("bad").hidden = false;
+      return;
+    }
+    $("title").textContent = kind.title;
+    $("sub").textContent = kind.sub;
+    $("bubble").innerHTML = kind.bubble;
+    var box = $("code");
+    box.textContent = "";
+    code.match(/.{1,4}/g).forEach(function (g) { var s = document.createElement("span"); s.textContent = g; box.appendChild(s); });
+    var android = /Android/i.test(navigator.userAgent);
+    // 안드로이드: intent:// 로 앱을 연다. 앱이 없으면 Chrome 이 스토어로 간다(스토어 주소에는 코드가 들어가지 않는다)
+    $("open").href = android
+      ? "intent://j/" + code + "#Intent;scheme=" + SCHEME + ";package=" + PKG + ";S.browser_fallback_url=" + encodeURIComponent(STORE) + ";end"
+      : SCHEME + "://j/" + code;
+    if (!android) $("sub").textContent = "참새는 안드로이드 앱이에요. 안드로이드 폰에서 링크를 눌러 주세요";
+    $("ok").hidden = false;
+  }
+
+  function say(t) { $("toast").textContent = t; }
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  $("copy").addEventListener("click", function () {
+    if (!code) return;
+    var done = function () { say("복사했어요. 참새 앱 → 참새떼 → 짹 붙여넣기"); };
+    var manual = function () {
+      if (fallbackCopy(code)) { done(); return; }
+      var r = document.createRange(); r.selectNodeContents($("code"));
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      say("코드를 길게 눌러 복사해 주세요");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, manual);
+    else manual();
+  });
+  window.addEventListener("hashchange", function () { say(""); render(); });
+  render();
+})();
+</script>
+</body>
+</html>
